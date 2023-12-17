@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">PartyApp-Admin</string>
+    <string name="have_account">Have an Account</string>
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="telephone">Telephone</string>
+    <string name="email">Email</string>
+    <string name="Second_name">Second Name</string>
+    <string name="First_name">Login</string>
+
+</resources>
