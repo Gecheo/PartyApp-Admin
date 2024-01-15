@@ -13,6 +13,8 @@ import com.partyapp_admin.utils.FORGOT
 import com.partyapp_admin.utils.LOGIN
 import com.partyapp_admin.utils.SIGNUP
 import com.partyapp_admin.utils.SPLASH
+import com.partyapp_admin.viewModels.LoginViewModel
+import com.partyapp_admin.viewModels.SignUpViewModel
 
 
 sealed class AuthGraph(val route:String){
@@ -23,16 +25,19 @@ sealed class AuthGraph(val route:String){
 
 }
 
-fun NavGraphBuilder.loginGraph(navController: NavHostController){
-    navigation(startDestination =AuthGraph.SplashScreen.route,route = RootGraph.Authentication.route){
+fun NavGraphBuilder.loginGraph(
+    navController: NavHostController,
+    signUpViewModel: SignUpViewModel,
+    loginViewModel: LoginViewModel){
+    navigation(startDestination =AuthGraph.SignupPage.route,route = RootGraph.Authentication.route){
         composable(route = AuthGraph.SplashScreen.route){
             EntryScreen(navController = navController)
         }
         composable(route = AuthGraph.SignupPage.route){
-            RegisterScreen()
+            RegisterScreen(navHostController = navController, signUpViewModel = signUpViewModel)
         }
         composable(route = AuthGraph.LoginPage.route){
-            LoginScreen(navController = navController)
+            LoginScreen(navController = navController, loginViewModel = loginViewModel)
         }
         composable(route = AuthGraph.ForgotPage.route){
             ForgotScreen()

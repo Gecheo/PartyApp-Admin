@@ -1,6 +1,7 @@
 package com.partyapp_admin.screens
 
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,13 +15,16 @@ import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -28,7 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -38,17 +42,20 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.partyapp_admin.R
-import com.partyapp_admin.navigation.DetailsScreen
+import com.partyapp_admin.navigation.AuthGraph
 import com.partyapp_admin.navigation.RootGraph
+import com.partyapp_admin.viewModels.LoginViewModel
 
 
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    navController: NavHostController
-){
+    navController: NavHostController,
+    loginViewModel: LoginViewModel
+) {
+    val context = LocalContext.current
+    val status = loginViewModel.loginStatus.value
 
     var userEmail by rememberSaveable {
         mutableStateOf("")
@@ -67,8 +74,10 @@ fun LoginScreen(
 
     ) {
         Spacer(modifier = modifier.height(10.dp))
-        Icon(painter = painterResource(id = R.drawable.baseline_wine_bar_24),
-            contentDescription = null,)
+        Icon(
+            painter = painterResource(id = R.drawable.baseline_wine_bar_24),
+            contentDescription = null,
+        )
 
         Text(
             text = stringResource(id = R.string.login),
@@ -81,7 +90,7 @@ fun LoginScreen(
 
         OutlinedText(
             value = userEmail,
-            onValueChanged = {userEmail= it},
+            onValueChanged = { userEmail = it },
             visualTransformation = VisualTransformation.None,
             icon = R.drawable.outline_person_24,
             label = R.string.email,
@@ -92,7 +101,7 @@ fun LoginScreen(
 
         OutlinedText(
             value = password,
-            onValueChanged = {password =  it},
+            onValueChanged = { password = it },
             visualTransformation = PasswordVisualTransformation(),
             icon = R.drawable.outline_lock_24,
             label = R.string.password,
@@ -103,7 +112,11 @@ fun LoginScreen(
         Spacer(modifier = modifier.height(10.dp))
         OutlinedButton(
             onClick = {
-                navController.navigate(RootGraph.Content.route)
+                if (!emailCheck(userEmail)) {
+                    Toast.makeText(context, "Please Enter valid email", Toast.LENGTH_LONG).show()
+                } else {
+                    loginViewModel.signingUser(userEmail, password)
+                }
             },
             enabled = true,
             modifier = modifier
@@ -114,17 +127,36 @@ fun LoginScreen(
 
             )
         ) {
-            Text(text = "Navigate to SignUp")
+            Text(text = stringResource(id = R.string.login),color = MaterialTheme.colorScheme.surface)
+        }
+
+        if (status.isLoading) {
+            CircularProgressIndicator()
+        }
+
+        LaunchedEffect(key1 = status) {
+            if (status.isSuccess) {
+                Toast.makeText(context, "Logged in Successfully", Toast.LENGTH_LONG).show()
+                navController.navigate(RootGraph.Content.route) {
+                    popUpTo(RootGraph.Content.route)
+                }
+
+            }
         }
 
         Row {
-            Text(text = stringResource(id = R.string.email),
-                color = Color.White,
-                modifier = modifier.padding(top = 15.dp))
+            Text(
+                text = stringResource(id = R.string.no_account),
+                color = MaterialTheme.colorScheme.surfaceTint,
+                modifier = modifier.padding(top = 15.dp)
+            )
 
             TextButton(onClick = {
+                navController.navigate(AuthGraph.SignupPage.route)
 
             }) {
+                Text(text = stringResource(id = R.string.register),
+                    color = MaterialTheme.colorScheme.surfaceTint)
 
             }
 
@@ -137,40 +169,45 @@ fun LoginScreen(
 
 @Composable
 fun OutlinedText(
-    value:String,
-    onValueChanged:(String)->Unit,
+    value: String,
+    onValueChanged: (String) -> Unit,
     visualTransformation: VisualTransformation,
-    icon:Int,
-    label:Int,
+    icon: Int,
+    label: Int,
     modifier: Modifier = Modifier,
     keyboardOptions: KeyboardOptions
 
-){
-    val containerColor = colorResource(id =R.color.black )
+) {
+
     OutlinedTextField(
         value = value,
         onValueChange = onValueChanged,
         visualTransformation = visualTransformation,
-        leadingIcon = { Icon(painter = painterResource(id = icon), contentDescription = null)},
+        leadingIcon = { Icon(painter = painterResource(id = icon), contentDescription = null) },
         singleLine = true,
         modifier = modifier
             .fillMaxWidth()
             .padding(start = 18.dp, end = 18.dp, top = 9.dp, bottom = 9.dp),
-        shape = CutCornerShape(topStart = 10.dp, topEnd = 0.dp, bottomStart = 0.dp, bottomEnd = 10.dp),
-        label = { Text(text = stringResource(id = label))},
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedTextColor = Color.White,
-            unfocusedTextColor = Color.White,
-            focusedContainerColor = containerColor,
-            unfocusedContainerColor = containerColor,
-            disabledContainerColor = containerColor,
-
+        shape = CutCornerShape(
+            topStart = 10.dp,
+            topEnd = 0.dp,
+            bottomStart = 0.dp,
+            bottomEnd = 10.dp
         ),
+        label = { Text(text = stringResource(id = label)) },
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = MaterialTheme.colorScheme.surface,
+            focusedLabelColor = MaterialTheme.colorScheme.surface,
+            focusedLeadingIconColor = MaterialTheme.colorScheme.surface,
+            focusedPlaceholderColor = MaterialTheme.colorScheme.surface,
+
+       ),
         keyboardOptions = keyboardOptions
 
 
     )
 }
+
 
 //@Preview(showSystemUi = true, showBackground = true)
 //@Composable

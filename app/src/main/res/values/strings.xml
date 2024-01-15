@@ -4,10 +4,15 @@
     <string name="login">Login</string>
     <string name="register">Register</string>
     <string name="password">Password</string>
+    <string name="no_account">Have no Account? </string>
     <string name="confirm_password">Confirm Password</string>
     <string name="telephone">Telephone</string>
     <string name="email">Email</string>
+    <string name="emp_no">Employee Number</string>
     <string name="Second_name">Second Name</string>
-    <string name="First_name">Login</string>
+    <string name="First_name">First Name</string>
+    <string name="search_icon">Search icon</string>
+    <string name="addProduct_icon">Add product icon</string>
+
 
 </resources>
